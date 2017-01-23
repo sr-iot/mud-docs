@@ -2,6 +2,7 @@
 \usepackage[colorlinks=true]{hyperref}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
 \usepackage{array}
+\usepackage{etoolbox}
 \usepackage{graphicx}
 \newcommand{\subparagraph}{}
 \usepackage{titlesec}
@@ -9,6 +10,8 @@
 \titleformat{\subsection}{\color{brown}\normalfont\bfseries}{\color{black}\thesubsection}{1em}{}
 \titleformat{\subsubsection}{\color{brown}\normalfont\bfseries}{\color{black}\thesubsubsection}{1em}{}
 \hyphenation{op-tical net-works semi-conduc-tor}
+\newtoggle{industry}
+\togglefalse{industry}
 \begin{document}
 \title{MUD: Simple, Effective IoT Network Security}
 \author{\IEEEauthorblockN{Steven Rich}
@@ -25,16 +28,21 @@ Email: thorstendlux@google.com}
 }
 
 \maketitle
-
+\thispagestyle{plain}
+\pagestyle{plain}
 \begin{abstract}
 Manufacturer Usage Descriptions, or MUDs, allow a manufacturer to
 cheaply and simply describe to the network the accesses required by an
 IoT device without adding any extra cost or software to the devices
-themselves.  This document describes the lifecycle of Manufacturer
-Usage Descriptions (MUDs) by describing detailed MUD scenarios from
-the perspective of manufacturers.
+themselves.  By doing so, the network infrastructure devices can apply
+access policies automatically which increase the overall security of
+the entire network, not just for the IoT devices themselves.  This
+document describes the lifecycle of Manufacturer Usage Descriptions
+(MUDs) by describing detailed MUD scenarios from the perspective of
+manufacturers.
 \end{abstract}
 
+\iftoggle{industry}{
 \section{First, a Story}
 {\it This is a fictional account of {\rm Acme Lightbulb and Sensor}'s
   first foray into developing and delivering IoT-connectable devices,
@@ -94,9 +102,11 @@ light came on, with full functionality.  And the bulbs and other IoT
 devices like it would have been locked down to the minimal, sensible
 network access specified by Acme from the start, eliminating the
 devices' abilities to attack other devices.
+}
 
 \section{MUD Motivation}
-As the anecdote above showed, the addition of IoT devices to a network
+\iftoggle{industry}{%
+As the anecdote above showed, t}{T}he addition of IoT devices to a network
 can, at least theoretically, expand the attack surface of that
 network.  Even if a device does not have exploitable vulnerabilities
 (in the sense of an attacker injecting and running malware on it), it
@@ -140,7 +150,7 @@ network to automatically configure the required network access for IoT
 devices so that they can perform their intended functions without
 granting them gratuitous, unrestricted network privilege.
 
-\section{MUD Introduction}
+\section{MUD High-level Introduction}
 Manufacturer Usage Descriptions (MUDs) provide advice to end networks
 on how to treat specific classes of devices.  The MUD architecture is
 explained in \cite{I-D:ietf-opsawg-mud}, but we will describe it
@@ -148,32 +158,34 @@ briefly here and also discuss details where necessary to understand
 this document.  At its most basic, MUD is a system by which the IoT
 device itself tells the network exactly how to retrieve its network
 access requirements (in a ``MUD File''), and network infrastructure
-can fetch and act up this information.  The MUD File itself is a
+can fetch and act upon this information.  The MUD File itself is a
 static text file\footnote{The HTTPS server(s) which serves up the file
   or files can technically use whatever technology for implementation
   that is desired.  However, each MUD file may simply be stored and
   served up as simple, single text files.} which the network
 infrastructure element responsible for it can retrieve from the
 manufacturer or from whomever the manufacturer delegates the
-responsibility to.
+responsibility to.  The MUD file may be cached, so when served, the
+MUD file should be returned with a ``max-age'' value which lets the
+requestor know how long it can cache it.
 
 To ``add a MUD file specification'' to an IoT device is a very minimal
 change.  To whatever dynamic network registration protocol which is
 currently being used by the device (e.g. DHCP, etc.), the URL for the
-MUD file is added.  It is so simple that the device manufacturer can
-compile the URL into the firmware of the device, assuming that that is
-the most appropriate implementation.\footnote{A lightbulb, for
-  example, may comprise a microcontroller with embedded flash and
-  essentially no bulk storage, so the URL can be compiled directly
-  into the data section of the software image.}  The essential point
-is that MUD does not force a large behavioral change on the IoT device
-itself, and the serving up of the MUD file during the lifetime of the
-devices is similarly relatively low-impact.  The bulk of the
-complexity of MUD is concentrated within the network elements which
-perform operations to retrieve the MUD files, possibly cache them, and
-then configure the network in response, but even there, the network
-elements effected mostly already perform all of these actions, albeit
-not automatically in most cases.
+MUD file is added as the ``MUD URI''.  It is so simple that the device
+manufacturer can compile the URI into the firmware of the device,
+assuming that that is the most appropriate implementation.\footnote{A
+  lightbulb, for example, may comprise a microcontroller with embedded
+  flash and essentially no bulk storage, so the URI can be compiled
+  directly into the data section of the software image.}  The
+essential point is that MUD does not force a large behavioral change
+on the IoT device itself, and the serving up of the MUD file during
+the lifetime of the devices is similarly relatively low-impact.  The
+bulk of the complexity of MUD is concentrated within the network
+elements which perform operations to retrieve the MUD files, possibly
+cache them, and then configure the network in response, but even
+there, the network elements effected mostly already perform all of
+these actions, albeit not automatically in most cases.
 
 For this description, one can consider three general
 classes of actors in the MUD ecosystem:
@@ -187,10 +199,10 @@ Note that end users are not mentioned here, as their involvement in
 MUD is minimal at best (and likely only present in the simplest of
 deployments).  Note also that ``Device manufacturers'' are described
 with the assumption that they will both include MUD URIs within their
-devices as well as service MUD URI queries (via a cloud service or via
+devices as well as service MUD URL requests (via a cloud service or via
 their own web infrastructures).  It is possible that a manufacturer
-will delegate the MUD URI response function to a third party.  The
-question of who actually services network requests for the MUD URI is
+will delegate the MUD URL retrieval function to a third party.  The
+question of who actually services network requests for the MUD URL is
 an administrative one and does not affect the MUD architecture.  It
 does give device manufactures more flexibility, though, in managing
 their investment into the MUD ecosystem.
@@ -214,12 +226,20 @@ within the MUD ecosystem:
 \item[{\color{brown}\it MUD controller}] \hfill \\ the system that requests and
   receives the MUD file from the MUD server.  After it has processed a
   MUD file it may direct changes to relevant network elements
-\item[{\color{brown}\it MUD URL}] \hfill \\ a URL that can be used by the MUD
-  controller to receive the MUD file
+\item[{\color{brown}\it URL}] \hfill \\ Universal Resource Locator
+\item[{\color{brown}\it URI}] \hfill \\ Universal Resource
+  Identifier.  The difference between a ``URI'' and a ``URL'' is that
+  a URI is intended to be used as an identifier in a general sense,
+  whereas a URL is a specific use case of a URI that is used to access
+  something at a particular network location
+\item[{\color{brown}\it MUD URI}] \hfill \\ a URI that an IoT device
+  carries and which will be issued during operations such as DHCP
+  requests which can be used as a URL to retrieve a MUD file
+\item[{\color{brown}\it MUD URL}] \hfill \\ the MUD URI being used as
+  a URL
 \item[{\color{brown}\it IEEE 802.1AR}] \hfill \\ A IEEE specification for a
   certification-based approach for communicating device
   characteristics
-\item[{\color{brown}\it URL}] \hfill \\ Universal Resource Locator
 \item[{\color{brown}\it YANG}] \hfill \\ A data modeling language for the
   definition of data sent over the NETCONF network configuration
   protocol\cite{ietf:rfc-yang}
@@ -230,19 +250,28 @@ within the MUD ecosystem:
   representations of ``objects'' such as strings of characters,
   numbers, boolean values, and lists and dictionaries of such objects
   and collections of objects
-\item[{\color{brown}\it CDN}] \hfill \\ Content Distribution Network,
-  a service which allows content providers to push content out to
-  points in the network much closer to consumers.  Akamai, CloudFlare,
-  and Rackspace are just a few examples of commercial CDNs, and most
-  telcos also provide CDN services.
 \end{description}
 
 Many of these terms are in common usage with the IETF or other network
 standards bodies and are thus used for consistency.  More information
 about terms like ``URL'', ``URI'', ``YANG'', and ``NETCONF'' can be
-found in the standards and references published by the IETF and others.
+found in the standards and references published by the IETF and
+others.  The value in distinguishing ``URI'' and ``URL'' will
+hopefully become more apparent when MUD file caching is discussed
+(during which time, already-retrieved MUD files will be used if the
+URI lookup returns a match).  The actual text of a ``MUD URI'' and a
+``MUD URL'' will generally be identical; the distinction lies in the
+use of it by various elements (IoT devices, network devices, and web
+services).
 
-\section{MUD Overview}
+\section{MUD Operation}
+\begin{figure*}
+  \begin{center}
+    \includegraphics[width=\textwidth]{Graphics/MUDNetworkFlow}
+    \caption{MUD High-level information flow}
+    \label{fig:MUDNetwork}
+  \end{center}
+\end{figure*}
 A full description of MUD is given in \cite{I-D:ietf-opsawg-mud}.  In
 short, when a device such as an IP-enabled lightbulb is connected to
 the network and given power, that device will perform some action to
@@ -274,7 +303,8 @@ are the following:
   will not be responsible for any security policy enforcement, as that
   is the job of the network which contains the devices themselves
 \item MUD files are fairly short (on the order of tens of lines of
-  text) and are thus trivial to serve either directly or via a CDN
+  text) and are thus trivial to serve either directly and are amenable
+  to caching
 \item The act of retrieving the MUD file and of acting on it is
   entirely up to the network infrastructure and not a responsibility
   of the IoT devices themselves.  MUD does not impose any behavioral
@@ -286,13 +316,6 @@ are the following:
 How does MUD work in practice?  Figure~\ref{fig:MUDNetwork} on
 Page~\pageref{fig:MUDNetwork} shows a
 representation of the high-level MUD information flow.
-\begin{figure*}
-  \begin{center}
-    \includegraphics[width=\textwidth]{Graphics/MUDNetworkFlow}
-    \caption{MUD High-level information flow}
-    \label{fig:MUDNetwork}
-  \end{center}
-\end{figure*}
 This document deals almost exclusively with elements in the upper left
 of that figure.  Specifically, it describes what a manufacturer should
 do to put a MUD file into a device and what is required for a
@@ -331,8 +354,7 @@ Device manufacturers have three responsibilities under MUD:
 \end{itemize}
 Since the MUD profiles can be static files, there is very little
 overhead required to serve these profiles.  Due to their static
-nature, they are inherently cacheable and could also suitably be
-served via a content distribution network (CDN).
+nature, they are inherently cacheable.
 
 Similarly, since the URI can be essentially static (the actual device
 configurations are easily updatable since they are contained in the
@@ -352,9 +374,9 @@ If the device manufacturer decides to update the profile, then it may
 do so at any time, independently of updates to the firmware on the
 devices themselves.  If it is expected that a profile may change
 frequently (say, for a new class of devices which aren't fully
-understood yet), then the MUD profile for said device should have a
-fairly short TTL (as compared to a device with a well-known network
-access profile).
+understood yet), then the MUD profile for said device should be served
+with a fairly short max-age (as compared to a device with a
+well-established network access profile).
 
 \section{High-level MUD Lifecycle}
 
@@ -389,8 +411,7 @@ of MUD deployment operates to impose strict requirements in this area.
   a time that the device is unsupported.  While it is outside the
   scope of this document, The manufacturer should support MUD profile
   retrieval for each device for at least as long as the manufacturer
-  supports the devices themselves, or at least arrange for some
-  content provider to do so (such as a CDN).
+  supports the devices themselves.
 
 \item If the profile is found to contain an error, the manufacturer
   should update the profile.  Devices which are already deployed will
@@ -405,17 +426,17 @@ of MUD deployment operates to impose strict requirements in this area.
 \end{enumerate}
 
 
-\section{MUD URL}
+\section{MUD URI}
 
-The MUD URL is a very visible and important part of MUD that is best
+The MUD URI is a very visible and important part of MUD that is best
 done correctly from the start, for once it is embedded in an IoT
 device, changing it for the fielded devices will be, at best,
 inconvenient.  Choosing a scheme for organizing the ``name space'' for
-the portion of the URL which is controlled by the device manufacturer
+the portion of the URI which is controlled by the device manufacturer
 may have knock-on effects such as the URL GET request routing behavior
 that must be supported during MUD file retrieval.
 
-The format of the URL is:
+The format of the URI is:
 
 \begin{center}
   \ttfamily\scriptsize
@@ -426,12 +447,26 @@ Referencing \cite{ietf:rfc3986}, the {\em authority} element is
 described by the ``authority'' type, the {\em model} element by the
 ``segment'' type, and {\em extras} by the ``query'' type.  This gives
 considerable flexibility to manufacturers to structure their various
-namespaces to handle a huge variety of device types.  To convey a
-sense of the possibilities, this section will describe some possible
-URI namespace designs which could be used for a fictional line of
-devices manufactured and sold by the fictional ``Acme Lightbulb and
-Sensor'' company.
+namespaces to handle a huge variety of device types.  However, this
+document will restrict itself to describing a very simple URI encoding
+scheme.
 
+By far, the simplest method of assigning MUD URIs to devices is to
+assign each distinct model number a URI of the form
+
+\begin{center}
+  \ttfamily\scriptsize
+  {\em https://authority/.well-known/mud/mud-rev}/{\bf model}
+\end{center}
+where the ``model'' element is literally the model number of the
+device.  If a manufacturer has a model number collision problem
+(possibly because of acquisitions of other companies, for example), a
+simple scheme of a prefix or a suffix, set off with a hyphen or
+similar, will suffice to disambiguate them.  Since the MUD files are
+relatively small, there is likely little value in conjuring schemes to
+save disk space with complicated naming conventions or structure.
+
+\iftoggle{industry}{
 The fictional product line will include lighting, lighting control,
 fan control, temperature sensing, motion sensing, and controllers.
 The device families are broken into two broad categories:
@@ -615,6 +650,7 @@ is strongly encouraged.
 To summarize versions, looking at the listing above, one should
 probably consider the multiple versions above as a mistake or an
 option of last resort.
+}
 
 \section{MUD File Serving: Operations, Lifetypes, and Transfer}
 
@@ -644,8 +680,7 @@ URLs of the MUD files.  There, network infrastructure devices from
 potentially anywhere on the internet will try to retrieve these MUD
 files.  The volume of requests will be simple to handle (given that
 MUD files are static and small and that MUD servers in the network
-will be able to cache them and avoid redundant retrievals), but
-manufactures can still opt to have those files served by CDNs.
+will be able to cache them and avoid redundant retrievals).
 
 A very simple and direct way to manage MUD files and make the possible
 future delegation of MUD file serving to a $3^{rd}$-party
@@ -663,13 +698,8 @@ MUD files could be
 \noindent which can serve as the {\em authority} section of the MUD
 URI.  If Acme wants to serve the MUD files themselves, then they can
 provision an HTTPS service that serves that address and return the
-requested MUD files.  If they decide that they want to delegate to a
-CDN, they can follow the instructions for whichever CDN they use to
-allow the CDN to handle requests for content at that DNS address.  For
-some CDNs, this means changing the DNS entry for ``mud.acmels.com'' to
-be a DNS CNAME which points to a URL within the CDN.  The MUD URI will
-not have changed at all, and the CDN can now handle requests for it
-using the same naming structure that Acme had begun with.
+requested MUD files, or they can create a CNAME to point to the actual
+entity who will answer the requests.
 
 \section{Conclusion}
 The conclusion goes here.
