@@ -1,3 +1,11 @@
+.de PPP
+.QP
+.nh
+..
+.de IPP
+.IP "\\$1" \$2
+.nh
+..
 .de Qt
 . fam C
 . ps -2
@@ -28,13 +36,13 @@
 .nr LT 7.2i
 .nr QI 3n
 .nr PI 3n
-.ds LF Rich
+.ds LF Rich & Dahm
 .ds RF [Page %]
 .ds CF
 .ds LH Draft
-.ds RH 24 January 2017
+.ds RH 12 March 2017
 .ds CH MUD Lifecyle: A Manufacturer's Perspective
-.hy 0
+.nh
 .in 0
 .ta 7.2iR
 Thing-to-Thing Research Group	S. Rich
@@ -43,23 +51,24 @@ Internet-Draft	Cisco Systems
 .br
 Intended status: Informational
 .br
-Expires: July 9, 2017	T. Dahm
+Expires: September 12, 2017	T. Dahm
 .br
 	Google
 .br
-	12 December 2016
+	12 March 2017
 .sp 2
 .ce
 MUD Lifecyle: A Manufacturer's Perspective
 .ce
-Was: ``MUD: Simple, Effective IoT Network Security''
+draft-srich-opsawg-mud-manu-lifecycle-00.txt
 
 .SH
 Abstract
 
 .ad l
 .fi
-.QP
+.PPP
+.nh
 Manufacturer Usage Descriptions, or MUDs, allow a manufacturer to
 cheaply and simply describe to the network the accesses required by an
 IoT device without adding any extra cost or software to the devices
@@ -70,46 +79,77 @@ document describes the lifecycle of Manufacturer Usage Descriptions
 (MUDs) by describing detailed MUD scenarios from the perspective of
 manufacturers.
 
+.SH
+Status of This Memo
+.PPP
+This Internet-Draft is submitted in full conformance with the
+provisions of BCP 78 and BCP 79.
+
+Internet-Drafts are working documents of the Internet Engineering Task
+Force (IETF).  Note that other groups may also distribute working
+documents as Internet-Drafts.  The list of current Internet-Drafts is
+at http://datatracker.ietf.org/drafts/current/.
+
+Internet-Drafts are draft documents valid for a maximum of six months
+and may be updated, replaced, or obsoleted by other documents at any
+time.  It is inappropriate to use Internet-Drafts as reference
+material or to cite them other than as "work in progress."
+
+This Internet-Draft will expire on September 12, 2017.
+   
+.SH
+Copyright Notice
+.PPP
+Copyright (c) 2017 IETF Trust and the persons identified as the
+document authors.  All rights reserved.
+
+This document is subject to BCP 78 and the IETF Trust's Legal
+Provisions Relating to IETF Documents
+(http://trustee.ietf.org/license-info) in effect on the date of
+publication of this document.  Please review these documents
+carefully, as they describe your rights and restrictions with respect
+to this document.  Code Components extracted from this document must
+include Simplified BSD License text as described in Section 4.e of
+the Trust Legal Provisions and are provided without warranty as
+described in the Simplified BSD License.
 
 .NH 1
-MUD Motivation
-.QP
-The addition of IoT devices to a network
-can, at least theoretically, expand the attack surface of that
-network.  Even if a device does not have exploitable vulnerabilities
-(in the sense of an attacker injecting and running malware on it), it
-may be susceptible to denial-of-service (DoS) attacks and thus could
-have its functionality impaired by attackers.  Recent events have
-shown just how real, and not just theoretical, such attacks can be.
+Introduction
+.PPP
+The addition of IoT devices to a network can, at least theoretically,
+expand the attack surface of that network.  Even if a device does not
+have exploitable vulnerabilities (in the sense of an attacker
+injecting and running malware on it), it may be susceptible to
+denial-of-service (DoS) attacks and thus could have its functionality
+impaired by attackers.  Recent events have shown just how real, and
+not just theoretical, such attacks can be.
 
+.ds miraiDesc MIRAI
 A detailed summary of the current state of understanding of the Mirai
-botnet's use of IoT devices can be found in
-href{https://www.flashpoint-intel.com/action-analysis-mirai-botnet-attacks-dyn/}{this
-article}.  It is estimated that around 100,000 IoT devices generated
-more than a terabit per second of DDoS traffic.
+botnet's use of IoT devices can be found in [\*[miraiDesc]].
+It is estimated that around 100,000 IoT devices generated more than a
+terabit per second of DDoS traffic.
 
-Also consider the
-href{http://www.pcworld.com/article/3147311/security/backdoor-accounts-found-in-80-sony-ip-security-camera-models.html}{Sony
-Cameras IP Security} article which describes a vulnerability in many
-camera models which could be exploited to launch attacks like those
-seen in the
-href{http://www.pcworld.com/article/3134056/hacking/an-iot-botnet-is-partly-behind-fridays-massive-ddos-attack.html}{massive
-DDos attack on DynDNS}.  As both of these incidents show, more
-network-accessible devices which can connect to arbitrary external
-addresses can, if those devices permit too much access or if they have
-vulnerabilities which allow arbitrary code execution, be used by
-attackers to amplify attacks and to do so by using origin addresses
-spanning broad ranges of networks.
+.ds sonyCameras SONYCAMS
+Also consider the Sony Cameras IP Security article [\*[sonyCameras]]
+which describes a vulnerability in many camera models which could be
+exploited to launch attacks like those seen in the massive DDoS attack
+.ds dyn DynDNS
+on DynDNS in [\*[dyn]].
+As both of these incidents show, more network-accessible devices which
+can connect to arbitrary external addresses can, if those devices
+permit too much access or if they have vulnerabilities which allow
+arbitrary code execution, be used by attackers to amplify attacks and
+to do so by using origin addresses spanning broad ranges of networks.
 
 Concerns about the negative possibilities of attacks related to IoT
-devices is also discussed in
-href{https://www.technologyreview.com/s/603015/security-experts-warn-congress-that-the-internet-of-things-could-kill-people/}{this
-article} in the MIT Technology Review
-that also discusses some of
-the regulatory and government angles in play.  In a recent move, the
-U.S. Federal Government has taken the step of
-href{https://www.cnet.com/news/d-link-lawsuit-ftc-security-hackers/}{suing
-  D-Link}, accusing it of ``poor security practices'' for some of its
+.ds mitTech MITTECH
+devices is also discussed in [\*[mitTech]] that also discusses some of
+the regulatory and government angles in play.  In a recent move
+.ds usgSuit USGSUIT
+described in [\*[usgSuit]], the U.S. Federal Government has taken the
+step of suing D-Link,
+accusing it of ``poor security practices'' for some of its
 IoT devices.
 
 MUD provides a much more light-weight model of achieving very
@@ -120,7 +160,7 @@ granting them gratuitous, unrestricted network privilege.
 
 .NH 1
 MUD High-level Introduction
-.QP
+.PPP
 Manufacturer Usage Descriptions (MUDs) provide advice to end networks
 on how to treat specific classes of devices.  The MUD architecture is
 explained in [\*[mud]], but we will describe it briefly here and also
@@ -157,14 +197,14 @@ these actions, albeit not automatically in most cases.
 For this description, one can consider three general
 classes of actors in the MUD ecosystem:
 .RS
-.IP \(bu
+.IPP \(bu
 Device manufacturers
-.IP \(bu
+.IPP \(bu
 Networking equipment manufacturers
-.IP \(bu
+.IPP \(bu
 Network operators
 .RE
-
+.PPP
 Note that end users are not mentioned here, as their involvement in
 MUD is minimal at best (and likely only present in the simplest of
 deployments).  Note also that ``Device manufacturers'' are described
@@ -185,51 +225,51 @@ be given if there are no specific hard requirements.
 
 .NH 1
 Terminology
-.QP
+.PPP
 
 Before going into descriptions how MUD works, we will list terms used
 within the MUD ecosystem:
 
 .RS
-.IP MUD
+.IPP MUD
 Manufacturer Usage Description
-.IP "MUD file"
+.IPP "MUD file"
 a file containing YANG-based JSON that describes a recommended
 behavior
-.IP "MUD file server"
+.IPP "MUD file server"
 an HTTPS server that hosts a MUD file
-.IP "MUD controller"
+.IPP "MUD controller"
 the system that requests and receives the MUD file from the MUD
 server.  After it has processed a MUD file it may direct changes to
 relevant network elements
-.IP URL
+.IPP URL
 Universal Resource Locator
-.IP URI
+.IPP URI
 Universal Resource Identifier.  The difference between a ``URI'' and a
 ``URL'' is that a URI is intended to be used as an identifier in a
 general sense, whereas a URL is a specific use case of a URI that is
 used to access something at a particular network location
-.IP "MUD URI"
+.IPP "MUD URI"
 a URI that an IoT device carries and which will be issued during
 operations such as DHCP requests which can be used as a URL to
 retrieve a MUD file
-.IP "MUD URL"
+.IPP "MUD URL"
 the MUD URI being used as a URL
-.IP "IEEE 802.1AR"
+.IPP "IEEE 802.1AR"
 A IEEE specification for a certification-based approach for
 communicating device characteristics
-.IP YANG
+.IPP YANG
 A data modeling language for the definition of data sent over the
 NETCONF network configuration protocol [\*[rfcYANG]]
-.IP NETCONF
+.IPP NETCONF
 Network Configuration Protocol [\*[rfcNETCONF]]
-.IP JSON
+.IPP JSON
 Javascript Object Notation, a human- as well as machine-readable file
 format containing textual representations of ``objects'' such as
 strings of characters, numbers, boolean values, and lists and
 dictionaries of such objects and collections of objects
 .RE
-
+.PPP
 Many of these terms are in common usage with the IETF or other network
 standards bodies and are thus used for consistency.  More information
 about terms like ``URL'', ``URI'', ``YANG'', and ``NETCONF'' can be
@@ -244,14 +284,7 @@ services).
 
 .NH 1
 MUD Operation
-.QP
-begin{figure*}
-  begin{center}
-    includegraphics[width=\textwidth]{Graphics/MUDNetworkFlow}
-    caption{MUD High-level information flow}
-    label{fig:MUDNetwork}
-  end{center}
-end{figure*}
+.PPP
 
 A full description of MUD is given in [\*[mud]].  In
 short, when a device such as an IP-enabled lightbulb is connected to
@@ -273,7 +306,7 @@ are the following:
 .br
 .nr Ln 0 1
 .RS
-.IP \n+(Ln.
+.IPP \n+(Ln.
 On the device itself, the only change required to add MUD
 compliance/functionality is to add a field populated with a URI to
 whatever network access protocol is already being used (i.e., DHCP,
@@ -281,17 +314,17 @@ IPv6 AD, etc.).  This will be a static text string which will
 probably remain constant throughout the life of the product and
 which is identical for every instance of a product run (i.e., there
 is no per-serial-number version of the MUD URI)
-.IP \n+(Ln.
+.IPP \n+(Ln.
 The MUD file which is to be returned via an HTTPS server can be
 a static file and can be reused for devices which have the same
 network access requirements.  The service which returns the MUD file
 will not be responsible for any security policy enforcement, as that
 is the job of the network which contains the devices themselves
-.IP \n+(Ln.
+.IPP \n+(Ln.
 MUD files are fairly short (on the order of tens of lines of
 text) and are thus trivial to serve either directly and are amenable
 to caching
-.IP \n+(Ln.
+.IPP \n+(Ln.
 The act of retrieving the MUD file and of acting on it is
 entirely up to the network infrastructure and not a responsibility
 of the IoT devices themselves.  MUD does not impose any behavioral
@@ -299,7 +332,7 @@ requirements on the IoT devices themselves other than that they must
 send the MUD URI during network access configuration, as mentioned
 earlier
 .RE
-
+.PPP
 How does MUD work in practice?  Figure FIXME shows a
 representation of the high-level MUD information flow.
 This document deals almost exclusively with elements in the upper left
@@ -312,7 +345,7 @@ connectivity for such devices.
 
 .NH 1
 Device Manufacturer Considerations
-.QP
+.PPP
 The device manufacturers have the most insight into what resources the
 devices will need once they are installed in a network.  They are thus
 best-suited to author the network profiles which will be required by
@@ -331,18 +364,19 @@ treated as the same.
 
 Device manufacturers have three responsibilities under MUD:
 .RS
-.IP \(bu
+.IPP \(bu
 They must author a MUD profile which describes a device's requirements
 for network access
-.IP \(bu
+.IPP \(bu
 They must encode a MUD URI into the device such that when the device
 performs DHCP or similar, the networking infrastructure is informed
 and can fetch and act on the MUD profile
-.IP \(bu
+.IPP \(bu
 The manufacturer (or someone to whom the manufacturer has delegated
 the responsibility) must service requests to fetch the MUD profile(s)
 via an HTTP GET request
 .RE
+.PPP
 Since the MUD profiles can be static files, there is very little
 overhead required to serve these profiles.  Due to their static
 nature, they are inherently cacheable.
@@ -371,7 +405,7 @@ well-established network access profile).
 
 .NH 1
 High-level MUD Lifecycle
-.QP
+.PPP
 
 The following lifecycle description is described considering a single
 device.  As additional devices are added to a portfolio, the same
@@ -382,7 +416,7 @@ of MUD deployment operates to impose strict requirements in this area.
 .br
 .nr Ln 0 1
 .RS
-.IP \n+(Ln.
+.IPP \n+(Ln.
 Based on a device's function, a MUD profile is either:
 .  RS
 .  IP \(bu
@@ -390,30 +424,30 @@ Chosen from a library of existing profiles for similar devices
 .  IP \(bu
 Written anew to describe this device's network requirements
 .  RE
-.IP \n+(Ln.
+.IPP \n+(Ln.
 If the profile is pre-existing, the a choice is made if this device
 will receive a new URI or if it should be classed as identical to
 existing devices and use the same URI
-.IP \n+(Ln.
+.IPP \n+(Ln.
 The chosen URI is assigned to the device so that when the device
 performs network initialization, the URI is included in the request
 (i.e., DHCP, ANIMA, etc.)
-.IP \n+(Ln.
+.IPP \n+(Ln.
 In parallel or in advance (but prior to first customer shipment), the
 device manufacturer should allocate in an appropriate namespace and
 place the MUD profiles for when the URI is used as a URL.
-.IP \n+(Ln.
+.IPP \n+(Ln.
 The MUD profile should be made available to customers until such a
 time that the device is unsupported.  While it is outside the scope of
 this document, The manufacturer should support MUD profile retrieval
 for each device for at least as long as the manufacturer supports the
 devices themselves.
-.IP \n+(Ln.
+.IPP \n+(Ln.
 If the profile is found to contain an error, the manufacturer should
 update the profile.  Devices which are already deployed will continue
 to use the original URI (unless a firmware updates changes it), so the
 original profile should be corrected
-.IP \n+(Ln.
+.IPP \n+(Ln.
 If a device manufacturer chooses to update a MUD-enabled device's
 firmware, the manufacturer may update the MUD URI to a new one.  The
 manufacturer should change the URI if the network access requirements
@@ -423,7 +457,7 @@ original firmware version.
 
 .NH 1
 MUD URI
-.QP
+.PPP
 
 The MUD URI is a very visible and important part of MUD that is best
 done correctly from the start, for once it is embedded in an IoT
@@ -471,7 +505,7 @@ save disk space with complicated naming conventions or structure.
 
 .NH 1
 MUD File Serving: Operations, Lifetypes, and Transfer
-.QP
+.PPP
 
 The previous section discussed how one might design the URI namespace
 for MUD files.  Another very important consideration is the total
@@ -517,27 +551,51 @@ files, or they can create a CNAME to point to the actual entity who
 will answer the requests.
 
 .NH 1
-Conclusion
-.QP
-The conclusion goes here.
+Security Considerations
+.PPP
+The bulk of this document describes the use of MUD to increase the
+security of a network.  However, it is possible to compromise the
+effectiveness of MUD by attacking its behavior directly.  This section
+discusses the known attacks and describes possible mitigations (all
+from the manufacturer's perspective).  This section also attempts to
+clarify the limits to which MUD is expected to perform in terms of
+increasing security.
+
+The first and most obvious attack scenario is that a malicious or
+compromised device can issue a MUD URI which allows that device to
+communicate too permissively, either by having the URI refer to an
+unintended file or by simply putting too permissive a set of rules in
+the otherwise-legitimate MUD File.  A manufacturer SHOULD employ
+secure development best practices to take reasonable steps to insure
+that their devices behave correctly at least up to the point that they
+are shipped and that their web services follow all BCPs.
+
+Other attacks are not manufacturer-specific and will not be covered in
+this document.  They will instead be discussed in TBD which focuses on
+the network operator's perspective of MUD.
+
+.NH 1
+IANA Considerations
+.PPP
+This document has no actions for IANA.
 
 .NH 1
 Normative References
 .LP
 .RS
-.IP [\*[mud]] 12n
+.IPP [\*[mud]] 12n
 Lear, E., "Manufacturer Usage Description Specification",
 draft-ietf-opsawg-mud-03, January 05, 2017
-.IP [\*[radiusWeis]] 12n
+.IPP [\*[radiusWeis]] 12n
 Weis, B., "RADIUS Extensions for Manufacturer Usage Description",
 draft-weis-radext-mud-00, October 25, 2016
-.IP [\*[rfcYANG]]
+.IPP [\*[rfcYANG]]
 Bjorklund, M., "YANG \- A Data Modeling Language for the Network
 Configuration Protocol (NETCONF)", IETF RFC 6020, 2010
-.IP [\*[rfcNETCONF]]
+.IPP [\*[rfcNETCONF]]
 Enns, R., Bjorklund, M., Schoenwaelder, J. and Bierman, A., "Network
 Configuration Protocol (NETCONF)", IETF RFC 6241, 2011
-.IP [\*[rfc3986]]
+.IPP [\*[rfc3986]]
 Berners-Less, T., Fielding, R., Masinter, L., "Uniform Resource
 Identifier (URI): Generic Syntax", IETF RFC 3986, 2005
 .RE
@@ -545,9 +603,19 @@ Identifier (URI): Generic Syntax", IETF RFC 3986, 2005
 Informative References
 .LP
 .RS
-.IP [\*[radiusExt]] 12n
+.IPP [\*[radiusExt]] 12n
 Mitton, D., "Network Access Servers Requirements: Extended RADIUS
 Practices", RFC2882, July 2000
+.IPP [\*[miraiDesc]] 12n
+https://www.flashpoint-intel.com/action-analysis-mirai-botnet-attacks-dyn/
+.IPP [\*[sonyCameras]] 12n
+http://www.pcworld.com/article/3147311/security/backdoor-accounts-found-in-80-sony-ip-security-camera-models.html
+.IPP [\*[dyn]] 12n
+http://www.pcworld.com/article/3134056/hacking/an-iot-botnet-is-partly-behind-fridays-massive-ddos-attack.html
+.IPP [\*[mitTech]] 12n
+https://www.technologyreview.com/s/603015/security-experts-warn-congress-that-the-internet-of-things-could-kill-people/
+.IPP [\*[usgSuit]] 12n
+https://www.cnet.com/news/d-link-lawsuit-ftc-security-hackers/
 .RE
 
 .ti 0
