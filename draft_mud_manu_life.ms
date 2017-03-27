@@ -21,6 +21,7 @@
 .ds rfcYANG RFC6020
 .ds rfcNETCONF RFC6241
 .ds rfc3986 RFC3986
+.nr Fn 0 1
 .pl 10.i
 .ie n \{\
 .  po 0
@@ -40,27 +41,27 @@
 .ds RF [Page %]
 .ds CF
 .ds LH Draft
-.ds RH 12 March 2017
+.ds RH 27 March 2017
 .ds CH MUD Lifecyle: A Manufacturer's Perspective
 .nh
 .in 0
 .ta 7.2iR
-Thing-to-Thing Research Group	S. Rich
+Operations and Management Area Work Group	S. Rich
 .br
 Internet-Draft	Cisco Systems
 .br
 Intended status: Informational
 .br
-Expires: September 12, 2017	T. Dahm
+Expires: September 27, 2017	T. Dahm
 .br
 	Google
 .br
-	12 March 2017
+	27 March 2017
 .sp 2
 .ce
 MUD Lifecyle: A Manufacturer's Perspective
 .ce
-draft-srich-opsawg-mud-manu-lifecycle-00.txt
+draft-srich-opsawg-mud-manu-lifecycle-01.txt
 
 .SH
 Abstract
@@ -77,7 +78,7 @@ access policies automatically which increase the overall security of
 the entire network, not just for the IoT devices themselves.  This
 document describes the lifecycle of Manufacturer Usage Descriptions
 (MUDs) by describing detailed MUD scenarios from the perspective of
-manufacturers.
+device manufacturers.
 
 .SH
 Status of This Memo
@@ -95,8 +96,8 @@ and may be updated, replaced, or obsoleted by other documents at any
 time.  It is inappropriate to use Internet-Drafts as reference
 material or to cite them other than as "work in progress."
 
-This Internet-Draft will expire on September 12, 2017.
-   
+This Internet-Draft will expire on September 27, 2017.
+
 .SH
 Copyright Notice
 .PPP
@@ -116,8 +117,8 @@ described in the Simplified BSD License.
 .NH 1
 Introduction
 .PPP
-The addition of IoT devices to a network can, at least theoretically,
-expand the attack surface of that network.  Even if a device does not
+The addition of IoT devices to a network
+expands the attack surface of that network.  Even if a device does not
 have exploitable vulnerabilities (in the sense of an attacker
 injecting and running malware on it), it may be susceptible to
 denial-of-service (DoS) attacks and thus could have its functionality
@@ -152,7 +153,7 @@ step of suing D-Link,
 accusing it of ``poor security practices'' for some of its
 IoT devices.
 
-MUD provides a much more light-weight model of achieving very
+MUD provides a light-weight model of achieving very
 effective baseline security for IoT devices by simply allowing a
 network to automatically configure the required network access for IoT
 devices so that they can perform their intended functions without
@@ -167,28 +168,25 @@ explained in [\*[mud]], but we will describe it briefly here and also
 discuss details where necessary to understand this document.  At its
 most basic, MUD is a system by which the IoT device itself tells the
 network exactly how to retrieve its network access requirements (in a
-``MUD File''), and network infrastructure can fetch and act upon this
-information.  The MUD File itself is a static text file which the
-network infrastructure element responsible for it can retrieve from
-the manufacturer or from whomever the manufacturer delegates the
-responsibility to.  The MUD file may be cached, so when served, the
-MUD file should be returned with a ``max-age'' value which lets the
-requestor know how long it can cache it.
+``MUD File'', which is the term used in the MUD specification to refer
+to the file which contains the description of an IoT device's network
+access requirements), and network infrastructure can fetch and act
+upon this information.  The MUD File itself is a static text file
+which the network infrastructure element responsible for it can
+retrieve from the manufacturer or from whomever the manufacturer
+delegates the responsibility to.  The MUD file may be cached, so when
+served, the MUD file should be returned with a ``max-age'' value which
+lets the requestor know how long it can cache it.
 
-To ``add a MUD file specification'' to an IoT device is a very minimal
-change.  To whatever dynamic network registration protocol which is
-currently being used by the device (e.g. DHCP, etc.), the URL for the
-MUD file is added as the ``MUD URI''.  It is so simple that the device
-manufacturer can compile the URI into the firmware of the device,
-assuming that that is the most appropriate implementation.  A
-lightbulb, for example, may comprise a microcontroller with embedded
-flash and essentially no bulk storage, so the URI can be compiled
-directly into the data section of the software image.
-
-The essential point is that MUD does not force a large behavioral
-change on the IoT device itself, and the serving up of the MUD file
-during the lifetime of the devices is similarly relatively low-impact.
-The bulk of the complexity of MUD is concentrated within the network
+To add MUD support to an IoT device is a very minimal change: add the
+URL for the MUD File as the ``MUD URI'' to whatever dynamic network
+registration protocol which is currently being used by the device
+(e.g. DHCP, etc.).  It is so simple that the device manufacturer can
+statically compile the URI into the firmware of the device.  The
+essential point is that MUD does not force a large behavioral change
+on the IoT device itself, and the serving up of the MUD file during
+the lifetime of the devices is similarly relatively low-impact.  The
+bulk of the complexity of MUD is concentrated within the network
 elements which perform operations to retrieve the MUD files, possibly
 cache them, and then configure the network in response, but even
 there, the network elements effected mostly already perform all of
@@ -285,6 +283,40 @@ services).
 .NH 1
 MUD Operation
 .PPP
+.nf
+.na
+.fam C
+
++--------------------------+ +------------------------------------------+
+| [Manufacturer]           | | [Customer]                               |
+|             -------      | |                                          |
+|     +----->(       )  6  | | +------------+  7  +----------------+    |
+|     |      |-------|<--------|    MUD     |---->| Network Policy |    |
+|     | 2:MUD|       |-------->| Controller |     |   Management   |    |
+|     | File (       )     | | +------------+     +----------------+    |
+|     |       -------      | |            ^        |                    |
+|     |                    | |   5:MUD    |        | 8                  |
+|  (1:Create Device)       | |     URI    |        v                    |
+|         |                | |          +-------------+                 |
+|         |                | |          |  (Switch)   |                 |
++---------|----------------+ |          +-------------+                 |
+          v                  |           |  |  |  |  |                  |
++-------------------+ 3:Buy  | 4:Deploy  |  |  |  |  |                  |
+| Distribution    ---------->|           X  X  X  X  X  ...             |
+| Channels          |        |                                          |
++-------------------+        +------------------------------------------+
+
+    6: MUD URI used as URL to request MUD File
+    7: MUD Controller informs network policy engine about ACLs
+    8: Network policy applied as close to IoT device as possible
+
+.fam T
+.ce
+.ds figMudFlow \n+(Fn
+Figure \*[figMudFlow]: MUD-related network information flow
+
+.ad l
+.fi
 
 A full description of MUD is given in [\*[mud]].  In
 short, when a device such as an IP-enabled lightbulb is connected to
@@ -333,7 +365,7 @@ send the MUD URI during network access configuration, as mentioned
 earlier
 .RE
 .PPP
-How does MUD work in practice?  Figure FIXME shows a
+How does MUD work in practice?  Figure \*[figMudFlow] shows a
 representation of the high-level MUD information flow.
 This document deals almost exclusively with elements in the upper left
 of that figure.  Specifically, it describes what a manufacturer should
@@ -369,12 +401,9 @@ They must author a MUD profile which describes a device's requirements
 for network access
 .IPP \(bu
 They must encode a MUD URI into the device such that when the device
-performs DHCP or similar, the networking infrastructure is informed
-and can fetch and act on the MUD profile
+performs DHCP or similar
 .IPP \(bu
-The manufacturer (or someone to whom the manufacturer has delegated
-the responsibility) must service requests to fetch the MUD profile(s)
-via an HTTP GET request
+The MUD File must be hosted on a publicly-available web server
 .RE
 .PPP
 Since the MUD profiles can be static files, there is very little
@@ -385,15 +414,15 @@ Similarly, since the URI can be essentially static (the actual device
 configurations are easily updatable since they are contained in the
 MUD file, not the URI), the manufacturer can assign a name space and
 begin encoding the URIs into the devices relatively early in the
-manufacturing process.  An important point is that manufacturers
-should adopt and follow a nomenclature that insures that they can
-sufficiently distinguish classes or families of devices with different
-requirements and assign them different URIs.  From a security
-standpoint, it is better to have several URIs with more granular
-security profiles than it is to have a very few URIs with "catch-all"
-(and thus more open) security profiles.  This ensures that a customer
-using a single family of devices will have the most closed network
-configuration possible.
+manufacturing process, including before the MUD specification is
+finalized.  An important point is that manufacturers should adopt and
+follow a nomenclature that insures that they can sufficiently
+distinguish classes or families of devices with different requirements
+and assign them different URIs.  From a security standpoint, it is
+better to have several URIs with more granular security profiles than
+it is to have a very few URIs with "catch-all" (and thus more open)
+security profiles.  This ensures that a customer using a single family
+of devices will have the most closed network configuration possible.
 
 If the device manufacturer decides to update the profile, then it may
 do so at any time, independently of updates to the firmware on the
@@ -473,6 +502,7 @@ The format of the URI is:
 https://\fIauthority\fP/.well-known/mud/\fImud-rev\fP/\fImodel\fP
 .Qe
 
+where ``mud-rev'' is currently the literal string ``v1'',
 and may be suffixed with ``
 .fam C
 .ps -2
@@ -488,11 +518,12 @@ namespaces to handle a huge variety of device types.  However, this
 document will restrict itself to describing a very simple URI encoding
 scheme.
 
+In the following, we will use ``example.com'' as the authority element.
 By far, the simplest method of assigning MUD URIs to devices is to
 assign each distinct model number a URI of the form
 
 .Qt
-\fIhttps://authority/.well-known/mud/mud-rev\fP/\fBmodel\fP
+https://example.com/.well-known/mud/v1/\fBmodel\fP
 .Qe
 
 where the ``model'' element is literally the model number of the
