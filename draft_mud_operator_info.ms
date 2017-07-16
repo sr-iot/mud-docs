@@ -78,7 +78,7 @@ time.  It is inappropriate to use Internet-Drafts as reference
 material or to cite them other than as "work in progress."
 
 This Internet-Draft will expire on September 12, 2017.
-   
+
 .SH
 Copyright Notice
 .PPP
@@ -195,6 +195,8 @@ network configuration aspects of MUD devices on the network:
 .nr Ln 0 1
 .RS
 .IPP \n+(Ln.
+Network Segmentation Considerations and Design
+.IPP \n+(Ln.
 Install and/or enable a MUD Policy Server
 .IPP \n+(Ln.
 Configure network devices so that they will receive and enforce ACLs
@@ -219,6 +221,116 @@ when enforcement can happen directly on the port.  This eliminates the
 possibility that a MPD can talk to other devices on the same switch
 unless explicitly permitted.  The remainder of this document will only
 discuss the case of using ACLs.
+
+.NH 2
+Network Segmentation Considerations and Design
+.PPP
+A well-designed network is one which includes the use of segmentation
+which keeps different parts of the network isolated from each other to
+the optimimum degree.  For example, groups of machines which need to
+communicate frequently and at high speed most likely should be on the
+same LAN.  Different groups of machines which rarely communicate
+together can be separated into different routed networks, and
+depending upon security requirements, may even be guarded by ACLs or
+other mechanisms.
+
+Different network segments may be designed with different expectations
+of security.  Inner-bastion networks may contain sensitive systems
+which are isolated from all but the most trusted systems.  Segments
+which allow guest users or devices which are less trusted may be
+relegated to segments which have also been protected with ACLs, but
+the focus can be on limiting what the devices in the segment can access
+rather than worrying about what external devices can access inside the
+segment itself.
+
+The goal of MUD is to enable the near-automatic management of device
+segmentation for the class of devices which have MUD support.  To be
+maximally effective, though, the network designer should take
+advantage of pre-defining segments into which MUD-capable devices can
+be grouped by function and by required access.  An optimal middle
+ground (for a large network with many types of MUD-enabled devices)
+would comprise some device-class-specific segments, some
+vendor-specific segments, the essential set of network segments
+(required regardless of MUD for the normal operation), and perhaps a
+``default network'' into which untrusted devices are placed which get
+no internal network access and severely limited internet access.
+
+Ideally, with full MUD support in devices deployed in a network, there
+would be no need for the so-called ``default network'' segment (except
+perhaps as a ``guest'' network) since MUD profiles would result in a
+properly-segmented and protected devices.  Until MUD is ubiquitously
+supported, though, it is wise to consider the option.
+
+To make these ideas more clear, an example network will be described
+(at a high level) with various segments defined.  The use of each
+segment by MUD will then be described.  These are segments within a
+larger network which will not be described to avoid cluttering the
+diagram.
+
+.TS
+box,tab(;);
+l|l|c.
+Segment Name;Segment Description;MUD
+=
+SecDB;Recorders, IDs;N
+_
+Readers;Badge Scanners;Y
+_
+Cameras;Security Cameras;Y
+_
+Other;Other IoT devices;Y
+_
+NetMgmt;Network Management;N
+.TE
+
+There are five segments.  Two of them will have no MUD-enabled devices
+in them, whereas the other three will.  Of those three, one is a
+non-classed MUD network (i.e., one in which MUD-enabled devices which
+do not belong to specifically-configured classes will be placed).  The
+connectivity of the network looks like:
+
+.nf
+.na
+   +--------------------+
+   | Network Management |-----------|
+   +--------------------+           |
+     |                              v
+     |                            +--------------+
+     |                            | SecDB        |
+     |  +---------+               | +----------+ |
+     +->| Readers |---------------->|Controller| |
+     |  +---------+               | +----^-----+ |
+     |                            +------|-------+
+     |     +---------+                   |    
+     +---->| Cameras |-------------------+    
+     |     +---------+                        
+     |                                        
+     |       +-------+                        
+     +------>| Other |
+             +-------+
+.ad l
+.fi
+.PPP
+The SecDB segment will contain senstive systems as well as a
+controller to which some of the other devices will need to
+communicate.  The Readers will be a segment in which all badge/card
+readers will be grouped.  The Cameras segment will contain all of the
+security cameras.  Finally, all other MUD-enabled devices will be
+placed in the Other segment.  Devices placed into any of these
+segments as a result of MUD will still have applicable ACLs applied.
+In addition, any static access control restrictions given to each
+segment will be enforced per the network designers' intentions.
+
+How do the cameras get into the Cameras segment, and how do the card
+readers get into the Readers segment?  The specifics will depend on
+the MUD Controller implemenation and configuration, but the gist is
+that the network administrator defines policies which map a MUD file's
+``manufacturer'' and ``model'' to the appropriate network segment
+assignment policy.  If no specific mapping is available for a device,
+then the MUD-enabled device will be placed into a default segment per
+the operation of the MUD Controller in use.
+
+FIXME
 
 .NH 2
 Installing and/or Enabling a MUD Controller
